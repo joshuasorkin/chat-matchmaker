@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Matchmaker - Skateboard MVP</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <h1>🎯 Chat Matchmaker</h1>
+            <p class="app-subtitle">Find others with similar conversations</p>
+            <div id="status-indicator" class="status info">Initializing...</div>
+        </header>
+
+        <main class="app-main">
+            <div class="chat-section">
+                <div class="chat-container">
+                    <div id="chat-window" class="chat-window">
+                        <!-- Messages will be added here dynamically -->
+                    </div>
+                    
+                    <div class="input-container">
+                        <textarea 
+                            id="message-input" 
+                            class="message-input" 
+                            placeholder="Type your message here..." 
+                            rows="1"
+                        ></textarea>
+                        <button id="send-button" class="send-button">Send</button>
+                    </div>
+                </div>
+
+                <div class="chat-controls">
+                    <button id="reset-button" class="reset-button">New Chat</button>
+                    <div id="chat-info" class="chat-info">
+                        <!-- Chat stats will be displayed here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="matches-section">
+                <div id="matches-container" class="matches-container">
+                    <p class="no-matches">No matches found yet.</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="debug-section">
+                <h4>Debug Tools</h4>
+                <button onclick="testRandomChat()" class="debug-button">Test Random Chat</button>
+                <button onclick="showDebugInfo()" class="debug-button">Show Debug Info</button>
+                <div id="debug-output" class="debug-output"></div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module">
+        import { ChatInterface } from './chat-interface.js';
+        
+        // Global instance for debugging
+        window.chatInterface = new ChatInterface();
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.chatInterface.initialize();
+        });
+
+        // Debug functions
+        window.testRandomChat = async function() {
+            try {
+                const stats = window.chatInterface.chatController.getMatcherStats();
+                if (stats.totalChats === 0) {
+                    alert('No chats available to test. Generate some chats first.');
+                    return;
+                }
+                
+                // Get a random chat ID from the loaded chats
+                const chats = window.chatInterface.chatController.chatMatcher.chats;
+                const randomChat = chats[Math.floor(Math.random() * chats.length)];
+                
+                const result = await window.chatInterface.testExistingChat(randomChat.id);
+                
+                const debugOutput = document.getElementById('debug-output');
+                debugOutput.innerHTML = `
+                    <h5>Test Results for Chat ${result.chatId}</h5>
+                    <p><strong>Topic:</strong> ${result.topic}</p>
+                    <p><strong>Matches:</strong> ${result.matches.length}</p>
+                    ${result.matches.map(m => `
+                        <div class="debug-match">
+                            ${m.chatId} (${Math.round(m.similarity * 100)}%): ${m.matchReason}
+                        </div>
+                    `).join('')}
+                `;
+            } catch (error) {
+                alert(`Error testing chat: ${error.message}`);
+            }
+        };
+
+        window.showDebugInfo = function() {
+            const controller = window.chatInterface.chatController;
+            const currentChat = controller.getCurrentChat();
+            const stats = controller.getMatcherStats();
+            
+            const debugOutput = document.getElementById('debug-output');
+            debugOutput.innerHTML = `
+                <h5>Debug Information</h5>
+                <p><strong>Current Chat ID:</strong> ${currentChat.id}</p>
+                <p><strong>Messages:</strong> ${currentChat.messageCount}</p>
+                <p><strong>Has Summary:</strong> ${currentChat.summary ? 'Yes' : 'No'}</p>
+                <p><strong>Has Embedding:</strong> ${currentChat.hasEmbedding ? 'Yes' : 'No'}</p>
+                <p><strong>Available Chats:</strong> ${stats.totalChats}</p>
+                <p><strong>Unique Topics:</strong> ${stats.uniqueTopics}</p>
+                <p><strong>Topics:</strong> ${stats.topics.join(', ')}</p>
+            `;
+        };
+    </script>
+</body>
+</html>

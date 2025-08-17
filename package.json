@@ -1,0 +1,15 @@
+{
+  "name": "chat-matchmaker",
+  "version": "1.0.0",
+  "description": "MVP for chat-based matchmaking app",
+  "main": "index.html",
+  "scripts": {
+    "generate-chat": "node chat-generator.js",
+    "summarize": "node chat-summarizer.js",
+    "embed": "node summary-embedder.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "type": "module"
+}
