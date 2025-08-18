@@ -2,8 +2,20 @@
 
 import fs from 'fs/promises';
 import fetch from 'node-fetch';
+import crypto from 'crypto';
 import { config } from './config.js';
-import { generateChatId, formatMessagesForDisplay } from './utils.js';
+
+// Local utility functions to avoid import issues
+function generateChatId(text) {
+  const hash = crypto.createHash('sha256').update(text).digest('hex');
+  return hash.substring(0, 6);
+}
+
+function formatMessagesForDisplay(messages) {
+  return messages.map(msg => 
+    `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+  ).join('\n\n');
+}
 
 async function generateFakeChat(topic) {
   const messages = [
