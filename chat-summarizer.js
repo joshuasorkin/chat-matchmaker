@@ -3,7 +3,13 @@
 import fs from 'fs/promises';
 import fetch from 'node-fetch';
 import { config } from './config.js';
-import { formatMessagesForDisplay } from './utils.js';
+
+// Local utility function to avoid import issues
+function formatMessagesForDisplay(messages) {
+  return messages.map(msg => 
+    `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
+  ).join('\n\n');
+}
 
 async function generateSummary(chat) {
   const conversation = formatMessagesForDisplay(chat.messages);
